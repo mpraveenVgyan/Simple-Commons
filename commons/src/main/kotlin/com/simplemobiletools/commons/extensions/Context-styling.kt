@@ -84,7 +84,7 @@ fun Context.isUsingSystemDarkTheme() = resources.configuration.uiMode and Config
 
 fun Context.getTimePickerDialogTheme() = when {
     baseConfig.isUsingSystemTheme -> if (isUsingSystemDarkTheme()) {
-        R.style.MyTimePickerMaterialTheme_Dark
+        R.style.MyDateTimePickerMaterialTheme/*MyTimePickerMaterialTheme_Dark*/
     } else {
         R.style.MyDateTimePickerMaterialTheme
     }
