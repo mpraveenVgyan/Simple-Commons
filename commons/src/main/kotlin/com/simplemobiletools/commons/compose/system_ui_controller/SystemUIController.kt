@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.ViewCompat
@@ -218,17 +217,9 @@ internal class AndroidSystemUiController(
         darkIcons: Boolean,
         transformColorForLightContent: (Color) -> Color
     ) {
+        // only the icon color is applied. Window.setStatusBarColor is deprecated (no effect from Android 15,
+        // edge-to-edge), the app draws the bar colors itself.
         statusBarDarkContentEnabled = darkIcons
-
-        window?.statusBarColor = when {
-            darkIcons && windowInsetsController?.isAppearanceLightStatusBars != true -> {
-                // If we're set to use dark icons, but our windowInsetsController call didn't
-                // succeed (usually due to API level), we instead transform the color to maintain
-                // contrast
-                transformColorForLightContent(color)
-            }
-            else -> color
-        }.toArgb()
     }
 
     override fun setNavigationBarColor(
@@ -238,17 +229,9 @@ internal class AndroidSystemUiController(
         transformColorForLightContent: (Color) -> Color
     ) {
         navigationBarDarkContentEnabled = darkIcons
+        // only the icon color is applied. Window.setNavigationBarColor is deprecated (no effect from Android 15,
+        // edge-to-edge), the app draws the bar colors itself.
         isNavigationBarContrastEnforced = navigationBarContrastEnforced
-
-        window?.navigationBarColor = when {
-            darkIcons && windowInsetsController?.isAppearanceLightNavigationBars != true -> {
-                // If we're set to use dark icons, but our windowInsetsController call didn't
-                // succeed (usually due to API level), we instead transform the color to maintain
-                // contrast
-                transformColorForLightContent(color)
-            }
-            else -> color
-        }.toArgb()
     }
 
     override var systemBarsBehavior: Int

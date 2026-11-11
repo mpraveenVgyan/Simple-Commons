@@ -55,6 +55,10 @@ import java.util.regex.Pattern
 
 abstract class BaseSimpleActivity : AppCompatActivity() {
     var materialScrollColorAnimation: ValueAnimator? = null
+
+    // last status bar color requested by updateStatusbarColor. Window.setStatusBarColor/getStatusBarColor are deprecated
+    // (no effect from Android 15, edge-to-edge), the app draws the bar colors itself, so only the value is tracked here.
+    private var currentStatusBarColor = Color.TRANSPARENT
     var copyMoveCallback: ((destinationPath: String) -> Unit)? = null
     var actionOnPermission: ((granted: Boolean) -> Unit)? = null
     var isAskingPermissions = false
@@ -123,7 +127,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
         }
 
         if (showTransparentTop) {
-            window.statusBarColor = Color.TRANSPARENT
+            currentStatusBarColor = Color.TRANSPARENT
         } else if (!isMaterialActivity) {
             val color = if (baseConfig.isUsingSystemTheme) {
                 resources.getColor(R.color.you_status_bar_color)
@@ -180,7 +184,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
     }
 
     fun updateStatusbarColor(color: Int) {
-        window.statusBarColor = color
+        currentStatusBarColor = color
 
         if (color.getContrastColor() == DARK_GREY) {
             window.decorView.systemUiVisibility = window.decorView.systemUiVisibility.addBit(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)
@@ -194,8 +198,8 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
         setTaskDescription(ActivityManager.TaskDescription(null, null, color))
     }
 
+    // Window.setNavigationBarColor is deprecated (no effect from Android 15, edge-to-edge), only the icon color is updated.
     fun updateNavigationBarColor(color: Int) {
-        window.navigationBarColor = color
         updateNavigationBarButtons(color)
     }
 
@@ -270,11 +274,11 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
 
     private fun scrollingChanged(newScrollY: Int, oldScrollY: Int) {
         if (newScrollY > 0 && oldScrollY == 0) {
-            val colorFrom = window.statusBarColor
+            val colorFrom = currentStatusBarColor
             val colorTo = getColoredMaterialStatusBarColor()
             animateTopBarColors(colorFrom, colorTo)
         } else if (newScrollY == 0 && oldScrollY > 0) {
-            val colorFrom = window.statusBarColor
+            val colorFrom = currentStatusBarColor
             val colorTo = getRequiredStatusBarColor()
             animateTopBarColors(colorFrom, colorTo)
         }
@@ -334,7 +338,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
     fun updateStatusBarOnPageChange() {
         if (scrollingView is RecyclerView || scrollingView is NestedScrollView) {
             val scrollY = scrollingView!!.computeVerticalScrollOffset()
-            val colorFrom = window.statusBarColor
+            val colorFrom = currentStatusBarColor
             val colorTo = if (scrollY > 0) {
                 getColoredMaterialStatusBarColor()
             } else {
